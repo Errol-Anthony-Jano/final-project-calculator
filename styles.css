@@ -27,13 +27,39 @@ body {
 }
 
 #display-panel {
+    box-sizing: border-box;
+    padding: 0.5em;
     border: 1px solid black;
     border-radius: 8px;
     height: 20%;
 }
 
 #button-panel {
-    border: 1px solid black;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5em;
+
+
     border-radius: 8px;
     height: 80%;
+}
+
+#button-panel > * {
+    border-radius: 8px;
+    width: 23%;
+}
+
+.expression-panel {
+
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+
+    border-radius: 8px;
+    height: 50%;
+}
+
+#result {
+    font-size: 1.75rem;
 }
