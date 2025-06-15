@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 * {
     margin: 0;
 }
@@ -46,6 +47,7 @@ body {
 }
 
 #button-panel > * {
+    font-family: "Orbitron", sans-serif;
     border-radius: 8px;
     width: 23%;
 }
@@ -62,4 +64,8 @@ body {
 
 #result {
     font-size: 1.75rem;
+}
+
+#expression, #result {
+    font-family: "Orbitron", sans-serif;
 }
