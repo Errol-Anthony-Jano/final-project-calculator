@@ -69,3 +69,7 @@ body {
 #expression, #result {
     font-family: "Orbitron", sans-serif;
 }
+
+.operator {
+    background-color: #fdfd96;
+}
