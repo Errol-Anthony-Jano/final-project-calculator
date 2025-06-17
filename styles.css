@@ -23,7 +23,7 @@ body {
 
     border: 1px solid black;
     border-radius: 8px;
-    height: 75%;
+    height: 85%;
     width: 25%;
 }
 
@@ -72,4 +72,12 @@ body {
 
 .operator {
     background-color: #fdfd96;
+    font-size: 1.5rem;
+}
+.equals {
+    font-size: 1.5rem;
+}
+
+#decimal-point {
+    font-size: 1.5rem;
 }
