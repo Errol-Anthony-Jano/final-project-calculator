@@ -1,3 +1,17 @@
+/*
+
+    TODO: 
+    - Disable decimal point until a new operator is entered
+    - Keyboard input
+    - Backspace button
+*/
+
+
+
+
+
+
+
 const buttonList = [['CLR', 'Backspace', '%', '\u00b1'], ['7','8','9','+'], ['4','5','6','-'], ['1','2','3','\u00d7'], ['0', '.', '=', '\u00f7']]
 
 const buttonPanel = document.querySelector("#button-panel");
@@ -105,15 +119,20 @@ function returnOperator(str) {
 function operate(num1, num2, op) {
     let parse_num1 = Number(num1);
     let parse_num2 = Number(num2)
+    let result = 0;
+
     switch(op) {
         case "+":
-            return parse_num1 + parse_num2;
+            result = parse_num1 + parse_num2
+            return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "\u00d7":
-            return parse_num1 * parse_num2;
+            result = parse_num1 * parse_num2
+            return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "\u00f7":
-            return parse_num1 / parse_num2;
+            result = parse_num1 / parse_num2;
+            return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "-":
-            return parse_num1 - parse_num2;
+            return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
     }
 }
 
