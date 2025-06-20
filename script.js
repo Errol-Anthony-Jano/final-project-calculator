@@ -4,6 +4,7 @@
     - Disable decimal point until a new operator is entered
     - Keyboard input
     - Backspace button
+    - Prevent display overflow
 */
 
 
@@ -12,7 +13,7 @@
 
 
 
-const buttonList = [['CLR', 'Backspace', '%', '\u00b1'], ['7','8','9','+'], ['4','5','6','-'], ['1','2','3','\u00d7'], ['0', '.', '=', '\u00f7']]
+const buttonList = [['CLR', 'BKSP', '%', '\u00b1'], ['7','8','9','+'], ['4','5','6','-'], ['1','2','3','\u00d7'], ['0', '.', '=', '\u00f7']]
 
 const buttonPanel = document.querySelector("#button-panel");
 const expressionDisplay = document.querySelector("#expression");
@@ -65,11 +66,21 @@ buttonPanel.addEventListener("click", (e) => {
     if (e.target.textContent == "CLR") {
         expressionDisplay.textContent = "";
         resultDisplay.textContent = "0";
-        op1 = op2 = ""
+        op1 = op2 = "";
         result = undefined;
         dpFlag = false; 
         signFlag = true;
         operatorFlag = false;
+    }
+
+    if (e.target.textContent == "BKSP" && e.target.textContent > 0) {
+        let len = expressionDisplay.textContent.length;
+
+        expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1);
+
+        let opIndex = findOperator(expressionDisplay.textContent)
+
+        opIndex < 0 ? operatorFlag = false : operatorFlag = true;
     }
 
     if (e.target.classList.contains("operator") && expressionDisplay.textContent.length > 0) {
@@ -141,6 +152,15 @@ buttonPanel.addEventListener("click", (e) => {
     if (e.target.textContent == '.' && dpFlag == false) {
         expressionDisplay.textContent += e.target.textContent;
         dpFlag = true;
+    }
+
+    if (e.target.textContent == '%') {
+        let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent);
+
+        if (opIndex < 0) {
+
+        }
     }
 });
 
