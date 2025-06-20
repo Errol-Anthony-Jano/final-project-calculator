@@ -128,7 +128,7 @@ buttonPanel.addEventListener("click", (e) => {
             }
             else {
                 signFlag = true;
-                expressionDisplay.textContent = expressionDisplay.textContent.substring(1);
+                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, opIndex + 1) + expressionDisplay.textContent.substring(opIndex + 2);
             }
         }
     }
