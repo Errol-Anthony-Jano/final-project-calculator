@@ -83,11 +83,16 @@ buttonPanel.addEventListener("click", (e) => {
             op1 = expressionDisplay.textContent;
         }
         else {
-            op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
-            result = operate(op1, op2, expressionDisplay.textContent[opIndex])
-            resultDisplay.textContent = result;
-            expressionDisplay.textContent = result;
-            op1 = expressionDisplay.textContent;
+            if (opIndex == len - 1) {
+                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1)
+            }
+            else {
+                op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
+                result = operate(op1, op2, expressionDisplay.textContent[opIndex])
+                resultDisplay.textContent = result;
+                expressionDisplay.textContent = result;
+                op1 = expressionDisplay.textContent;
+            }
         }
         expressionDisplay.textContent += e.target.textContent;
     }
