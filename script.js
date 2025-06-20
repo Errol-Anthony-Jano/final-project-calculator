@@ -18,9 +18,13 @@ const buttonPanel = document.querySelector("#button-panel");
 const expressionDisplay = document.querySelector("#expression");
 const resultDisplay = document.querySelector("#result");
 
-let op1 = undefined;
-let op2 = undefined;
+let op1 = "";
+let op2 = "";
+
 let result = undefined;
+let dpFlag = false; 
+let signFlag = true; //true - positive; false - negative
+let operatorFlag = false;
 
 expressionDisplay.textContent = ""
 resultDisplay.textContent = "0"
@@ -49,7 +53,6 @@ for (let i = 0; i < buttonList.length; i++) {
             btn.setAttribute("id", "decimal-point");
         }
 
-
         buttonPanel.appendChild(btn);
     }
 }
@@ -62,38 +65,77 @@ buttonPanel.addEventListener("click", (e) => {
     if (e.target.textContent == "CLR") {
         expressionDisplay.textContent = "";
         resultDisplay.textContent = "0";
+        op1 = op2 = ""
         result = undefined;
-        
-        while (expressionStack.length > 0) {
-            expressionStack.pop()
-        }
+        dpFlag = false; 
+        signFlag = true;
+        operatorFlag = false;
     }
 
-    if (e.target.classList.contains("operator")) {
-        let len = expressionDisplay.textContent.length;
-        let opIndex = findOperatorIndex(expressionDisplay.textContent);
-        op1 = expressionDisplay.textContent.substring(0, opIndex);
-        op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
+    if (e.target.classList.contains("operator") && expressionDisplay.textContent.length > 0) {
+        operatorFlag = true;
+        signFlag = true;
 
-        if (opIndex > -1) {
+        let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent);
+
+        if (opIndex < 0) {
+            op1 = expressionDisplay.textContent;
+        }
+        else {
+            op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
             result = operate(op1, op2, expressionDisplay.textContent[opIndex])
             resultDisplay.textContent = result;
             expressionDisplay.textContent = result;
+            op1 = expressionDisplay.textContent;
         }
         expressionDisplay.textContent += e.target.textContent;
     }
 
     if (e.target.textContent == "=") {
-        let len = expressionDisplay.textContent.length;
-        let opIndex = findOperatorIndex(expressionDisplay.textContent);
+        let opIndex = findOperator(expressionDisplay.textContent)
         op1 = expressionDisplay.textContent.substring(0, opIndex);
-        op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
+        op2 = expressionDisplay.textContent.substring(opIndex + 1);
 
-        if (opIndex > -1) {
+        if (op1 && op2) {
             let result = operate(op1, op2, expressionDisplay.textContent[opIndex]);
             resultDisplay.textContent = result;
             expressionDisplay.textContent = ""
         }
+        else {
+            return;
+        }
+    }
+
+    if (e.target.textContent == '\u00b1' && expressionDisplay.textContent.length > 0) {
+        let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent)
+
+        if (opIndex < 0) {
+            if (signFlag == true) {
+                signFlag = false;
+                expressionDisplay.textContent = "-" + expressionDisplay.textContent;
+            }
+            else {
+                signFlag = true;
+                expressionDisplay.textContent = expressionDisplay.textContent.substring(1);
+            }
+        }
+        else {
+            if (signFlag == true) {
+                signFlag = false;
+                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, opIndex + 1) + "-" + expressionDisplay.textContent.substring(opIndex + 1);
+            }
+            else {
+                signFlag = true;
+                expressionDisplay.textContent = expressionDisplay.textContent.substring(1);
+            }
+        }
+    }
+
+    if (e.target.textContent == '.' && dpFlag == false) {
+        expressionDisplay.textContent += e.target.textContent;
+        dpFlag = true;
     }
 });
 
@@ -129,13 +171,26 @@ function operate(num1, num2, op) {
             result = parse_num1 * parse_num2
             return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "\u00f7":
+            if (op2 == "0") {
+                alert("Division by zero not permitted.");
+                return Infinity;
+            }
             result = parse_num1 / parse_num2;
             return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "-":
+            result = parse_num1 - parse_num2;
             return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
     }
 }
 
-function findOperatorIndex(str) {
-    return Math.max(str.indexOf("+"), str.indexOf("-"), str.indexOf("\u00d7"), str.indexOf("\u00f7"))
+function findOperator(str) {
+    let idx = undefined;
+
+    for (idx = 0; idx < str.length; idx++) {
+        if ((str[idx] == '-' && idx > 0) || str[idx] == '*' || str[idx] == '\u00d7' || str[idx] == '\u00f7' || str[idx] == '+') {
+            return idx;
+        }
+    }
+
+    return -1;
 }
