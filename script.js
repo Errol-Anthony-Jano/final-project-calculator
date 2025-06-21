@@ -1,19 +1,11 @@
 /*
-
     TODO: 
-    - Disable decimal point until a new operator is entered
+    - Disable decimal point until a new operator is entered (done)
     - Keyboard input
-    - Backspace button
+    - Backspace button (done) 
     - Prevent display overflow
 */
-
-
-
-
-
-
-
-const buttonList = [['CLR', 'BKSP', '%', '\u00b1'], ['7','8','9','+'], ['4','5','6','-'], ['1','2','3','\u00d7'], ['0', '.', '=', '\u00f7']]
+const buttonList = [['CLR', 'BKSP', 'INFO', '\u00b1'], ['7','8','9','+'], ['4','5','6','-'], ['1','2','3','\u00d7'], ['0', '.', '=', '\u00f7']]
 
 const buttonPanel = document.querySelector("#button-panel");
 const expressionDisplay = document.querySelector("#expression");
@@ -58,6 +50,18 @@ for (let i = 0; i < buttonList.length; i++) {
     }
 }
 
+document.addEventListener("keypress", (e) => {
+    if (!isNaN(e.key)) {
+        expressionDisplay.textContent += e.key;
+        return;
+    }
+
+    if (e.key == 'c') {
+        expressionDisplay.textContent = "";
+        return;
+    }
+})
+
 buttonPanel.addEventListener("click", (e) => {
     if (e.target.classList.contains("number")) {
         expressionDisplay.textContent += e.target.textContent;
@@ -73,13 +77,18 @@ buttonPanel.addEventListener("click", (e) => {
         operatorFlag = false;
     }
 
-    if (e.target.textContent == "BKSP" && e.target.textContent > 0) {
+    if (e.target.textContent == "BKSP" && expressionDisplay.textContent.length > 0) {
         let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent);
 
-        expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1);
+        if (expressionDisplay.textContent[len - 2] == '-' && len - 2 != opIndex) {
+            expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 2);
+        }
+        else {
+            expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1);
+        }
 
-        let opIndex = findOperator(expressionDisplay.textContent)
-
+        opIndex = findOperator(expressionDisplay.textContent)
         opIndex < 0 ? operatorFlag = false : operatorFlag = true;
     }
 
@@ -100,9 +109,16 @@ buttonPanel.addEventListener("click", (e) => {
             else {
                 op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
                 result = operate(op1, op2, expressionDisplay.textContent[opIndex])
-                resultDisplay.textContent = result;
-                expressionDisplay.textContent = result;
-                op1 = expressionDisplay.textContent;
+                if (result == Infinity) {
+                    resultDisplay.textContent = '0';
+                    expressionDisplay.textContent = '';
+                    return;
+                }
+                else {
+                    resultDisplay.textContent = result;
+                    expressionDisplay.textContent = result;
+                    op1 = expressionDisplay.textContent;
+                }
             }
         }
         expressionDisplay.textContent += e.target.textContent;
@@ -154,13 +170,8 @@ buttonPanel.addEventListener("click", (e) => {
         dpFlag = true;
     }
 
-    if (e.target.textContent == '%') {
-        let len = expressionDisplay.textContent.length;
-        let opIndex = findOperator(expressionDisplay.textContent);
-
-        if (opIndex < 0) {
-
-        }
+    if (e.target.textContent == 'INFO') {
+        alert("Calculator by Errol\nInstructions:\nC - clear display\nNumber keys - input");
     }
 });
 
