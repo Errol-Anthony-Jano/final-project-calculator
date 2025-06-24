@@ -10,6 +10,7 @@ const buttonList = [['CLR', 'BKSP', 'INFO', '\u00b1'], ['7','8','9','+'], ['4','
 const buttonPanel = document.querySelector("#button-panel");
 const expressionDisplay = document.querySelector("#expression");
 const resultDisplay = document.querySelector("#result");
+const MAX_LENGTH = 24;
 
 let op1 = "";
 let op2 = "";
@@ -28,6 +29,9 @@ for (let i = 0; i < buttonList.length; i++) {
         const btn = document.createElement("button");
         btn.textContent = buttonList[i][j];
         
+        if (i == 0) {
+            btn.classList.add("functions")
+        }
         if (!isNaN(buttonList[i][j])) {
             btn.classList.add("number")
         }
@@ -51,18 +55,68 @@ for (let i = 0; i < buttonList.length; i++) {
 }
 
 document.addEventListener("keypress", (e) => {
-    if (!isNaN(e.key)) {
-        expressionDisplay.textContent += e.key;
+    let isKeyNumeric = !isNaN(e.key);
+    let isKeyOperator = isOperator(e.key);
+
+    if (expressionDisplay.textContent.length >= MAX_LENGTH && (isKeyNumeric || isKeyOperator)) {
+        alert("Error: Display limit has been reached.");
         return;
     }
 
-    if (e.key == 'c') {
-        expressionDisplay.textContent = "";
-        return;
+    if (isKeyNumeric) {
+        expressionDisplay.textContent += e.key;
+    }
+    else if (isKeyOperator && expressionDisplay.textContent.length > 0) {
+        operatorFlag = true;
+        signFlag = true;
+
+        let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent);
+
+        let dsp = splitExpression(expressionDisplay.textContent, resultDisplay.textContent, opIndex, len);
+
+
+        expressionDisplay.textContent = dsp[0];
+        resultDisplay.textContent = dsp[1];
+        
+        let displayOperator = '';
+
+        if (e.key == '*') {
+            displayOperator = '\u00d7';
+        }
+        else if (e.key == '/') {
+            displayOperator = '\u00f7';
+        }
+        else {
+            displayOperator = e.key;
+        }
+
+        expressionDisplay.textContent += displayOperator;
     }
 })
 
+document.addEventListener("keydown", (e) => {
+    if (e.key == 'Backspace') {
+        let len = expressionDisplay.textContent.length;
+        let opIndex = findOperator(expressionDisplay.textContent);
+
+        expressionDisplay.textContent = backspace(expressionDisplay.textContent, len, opIndex);        
+
+        opIndex = findOperator(expressionDisplay.textContent)
+        opIndex < 0 ? operatorFlag = false : operatorFlag = true;
+    }
+    else if (e.key == 'Delete') {
+        expressionDisplay.textContent = '';
+        resultDisplay.textContent = '0';
+    }
+});
+
 buttonPanel.addEventListener("click", (e) => {
+    if (expressionDisplay.textContent.length >= MAX_LENGTH && (e.target.classList.contains("number") || e.target.classList.contains("operator"))) {
+        alert("Error: Display limit has been reached.");
+        return;
+    }
+    
     if (e.target.classList.contains("number")) {
         expressionDisplay.textContent += e.target.textContent;
     }
@@ -81,12 +135,7 @@ buttonPanel.addEventListener("click", (e) => {
         let len = expressionDisplay.textContent.length;
         let opIndex = findOperator(expressionDisplay.textContent);
 
-        if (expressionDisplay.textContent[len - 2] == '-' && len - 2 != opIndex) {
-            expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 2);
-        }
-        else {
-            expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1);
-        }
+        expressionDisplay.textContent = backspace(expressionDisplay.textContent, len, opIndex);        
 
         opIndex = findOperator(expressionDisplay.textContent)
         opIndex < 0 ? operatorFlag = false : operatorFlag = true;
@@ -99,28 +148,12 @@ buttonPanel.addEventListener("click", (e) => {
         let len = expressionDisplay.textContent.length;
         let opIndex = findOperator(expressionDisplay.textContent);
 
-        if (opIndex < 0) {
-            op1 = expressionDisplay.textContent;
-        }
-        else {
-            if (opIndex == len - 1) {
-                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, len - 1)
-            }
-            else {
-                op2 = expressionDisplay.textContent.substring(opIndex + 1, len);
-                result = operate(op1, op2, expressionDisplay.textContent[opIndex])
-                if (result == Infinity) {
-                    resultDisplay.textContent = '0';
-                    expressionDisplay.textContent = '';
-                    return;
-                }
-                else {
-                    resultDisplay.textContent = result;
-                    expressionDisplay.textContent = result;
-                    op1 = expressionDisplay.textContent;
-                }
-            }
-        }
+        let dsp = splitExpression(expressionDisplay.textContent, resultDisplay.textContent, opIndex, len);
+
+
+        expressionDisplay.textContent = dsp[0];
+        resultDisplay.textContent = dsp[1];
+
         expressionDisplay.textContent += e.target.textContent;
     }
 
@@ -129,40 +162,15 @@ buttonPanel.addEventListener("click", (e) => {
         op1 = expressionDisplay.textContent.substring(0, opIndex);
         op2 = expressionDisplay.textContent.substring(opIndex + 1);
 
-        if (op1 && op2) {
-            let result = operate(op1, op2, expressionDisplay.textContent[opIndex]);
-            resultDisplay.textContent = result;
-            expressionDisplay.textContent = ""
-        }
-        else {
-            return;
-        }
+        resultDisplay.textContent = equalsProcedure(expressionDisplay.textContent, op1, op2, opIndex);
+        expressionDisplay.textContent = "";
     }
 
     if (e.target.textContent == '\u00b1' && expressionDisplay.textContent.length > 0) {
         let len = expressionDisplay.textContent.length;
         let opIndex = findOperator(expressionDisplay.textContent)
 
-        if (opIndex < 0) {
-            if (signFlag == true) {
-                signFlag = false;
-                expressionDisplay.textContent = "-" + expressionDisplay.textContent;
-            }
-            else {
-                signFlag = true;
-                expressionDisplay.textContent = expressionDisplay.textContent.substring(1);
-            }
-        }
-        else {
-            if (signFlag == true) {
-                signFlag = false;
-                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, opIndex + 1) + "-" + expressionDisplay.textContent.substring(opIndex + 1);
-            }
-            else {
-                signFlag = true;
-                expressionDisplay.textContent = expressionDisplay.textContent.substring(0, opIndex + 1) + expressionDisplay.textContent.substring(opIndex + 2);
-            }
-        }
+        expressionDisplay.textContent = toggleSignFlag(expressionDisplay.textContent, opIndex);
     }
 
     if (e.target.textContent == '.' && dpFlag == false) {
@@ -171,12 +179,12 @@ buttonPanel.addEventListener("click", (e) => {
     }
 
     if (e.target.textContent == 'INFO') {
-        alert("Calculator by Errol\nInstructions:\nC - clear display\nNumber keys - input");
+        alert("Calculator by Errol");
     }
 });
 
 function isOperator(str) {
-    return str == '+' || str == '\u00d7' || str == '\u00f7' || str == '-';
+    return str == '+' || str == '\u00d7' || str == '\u00f7' || str == '-' || str == '*' || str == '/';
 }
 
 function returnOperator(str) {
@@ -204,6 +212,7 @@ function operate(num1, num2, op) {
             result = parse_num1 + parse_num2
             return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "\u00d7":
+        case "*":
             result = parse_num1 * parse_num2
             return Number.isInteger(result) ? result : Math.round(result * 100) / 100;
         case "\u00f7":
@@ -229,4 +238,74 @@ function findOperator(str) {
     }
 
     return -1;
+}
+
+function backspace(str, len, opIndex) {
+    if (str[len - 2] == '-' && len - 2 != opIndex) {
+        str = str.substring(0, len - 2);
+    }
+    else {
+        str = str.substring(0, len - 1);
+    }
+
+    return str;
+}
+
+function equalsProcedure(expression, op1, op2, opIndex) {
+    if (op1 && op2) {
+        let result = operate(op1, op2, expression[opIndex]);
+        return result;
+    }
+}
+
+function toggleSignFlag(expression, opIndex) {
+    if (opIndex < 0) {
+        if (signFlag == true) {
+            signFlag = false;
+            expression = "-" + expression;
+        }
+        else {
+            signFlag = true;
+            expression = expression.substring(1);
+        }
+    }
+    else {
+        if (signFlag == true) {
+            signFlag = false;
+            expression = expression.substring(0, opIndex + 1) + "-" + expression.substring(opIndex + 1);
+        }
+        else {
+            signFlag = true;
+            expression = expression.substring(0, opIndex + 1) + expression.substring(opIndex + 2);
+        }
+    }
+
+    return expression;
+}
+
+function splitExpression(expression, resultStr, opIndex, len) {
+    let res = [];
+    if (opIndex < 0) {
+        return [expression, resultStr];
+    }
+    else {
+        expression[opIndex] == len - 1 ? expression.substring(0, len - 1) : res = cascadeOperation(expression, resultStr, opIndex, len)
+    }
+
+    return res;
+}
+
+function cascadeOperation(expression, resultStr, opIndex, len) {
+    op1 = expression.substring(0, opIndex);
+    op2 = expression.substring(opIndex + 1, len);
+    result = operate(op1, op2, expression[opIndex])
+    //put in separate method
+    if (result == Infinity) {
+        return ['', '0'];
+    }
+    else {
+        resultStr = expression = result;
+    }
+
+    return [result, result];
 }
