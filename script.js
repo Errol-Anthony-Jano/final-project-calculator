@@ -11,6 +11,7 @@ const buttonPanel = document.querySelector("#button-panel");
 const expressionDisplay = document.querySelector("#expression");
 const resultDisplay = document.querySelector("#result");
 const MAX_LENGTH = 24;
+const MAX_RESULT_DISPLAY = 15;
 
 let op1 = "";
 let op2 = "";
@@ -91,7 +92,9 @@ document.addEventListener("keypress", (e) => {
             displayOperator = e.key;
         }
 
-        expressionDisplay.textContent += displayOperator;
+        if (dsp[0].length > 0) {
+            expressionDisplay.textContent += displayOperator;
+        }
     }
 })
 
@@ -108,6 +111,14 @@ document.addEventListener("keydown", (e) => {
     else if (e.key == 'Delete') {
         expressionDisplay.textContent = '';
         resultDisplay.textContent = '0';
+    }
+    else if (e.key == 'Enter') {
+        let opIndex = findOperator(expressionDisplay.textContent)
+        op1 = expressionDisplay.textContent.substring(0, opIndex);
+        op2 = expressionDisplay.textContent.substring(opIndex + 1);
+
+        resultDisplay.textContent = equalsProcedure(expressionDisplay.textContent, op1, op2, opIndex);
+        expressionDisplay.textContent = "";
     }
 });
 
@@ -154,7 +165,9 @@ buttonPanel.addEventListener("click", (e) => {
         expressionDisplay.textContent = dsp[0];
         resultDisplay.textContent = dsp[1];
 
-        expressionDisplay.textContent += e.target.textContent;
+        if (dsp[0].length > 0) {
+            expressionDisplay.textContent += e.target.textContent;
+        }
     }
 
     if (e.target.textContent == "=") {
@@ -301,6 +314,10 @@ function cascadeOperation(expression, resultStr, opIndex, len) {
     result = operate(op1, op2, expression[opIndex])
     //put in separate method
     if (result == Infinity) {
+        return ['', '0'];
+    }
+    else if (result.toString().length >= MAX_RESULT_DISPLAY) {
+        alert("Maximum digits has been reached.");
         return ['', '0'];
     }
     else {
